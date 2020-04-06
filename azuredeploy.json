@@ -59,7 +59,7 @@
     },
     "repoURL": {
       "type": "string",
-      "defaultValue": "https://jdoc.visualstudio.com/Call-FunctionApp-using-ADF-MI/_git/node-function-app",
+      "defaultValue": "https://github.com/jdocampo/node-function-app.git",
       "metadata": {
         "description": "The URL for the GitHub repository that contains the project to deploy."
       }
