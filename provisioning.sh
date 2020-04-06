@@ -45,15 +45,16 @@ dataRAW='{
     "principalType": "ServicePrincipal",
     "resourceId": "'$SP_OID'"
 }'
-
+# Add the ADF MI to the Application (providing authorization to the function app)
 curl -X POST "https://graph.microsoft.com/beta/servicePrincipals/$SP_OID/appRoleAssignedTo" \
 --header 'Content-Type: application/json' \
 --header "Authorization: $armToken" \
 --data-raw "$dataRAW"
 
-#New-AzureADServiceAppRoleAssignment -ObjectId $ADF_SP_OID -PrincipalId $ADF_SP_OID -Id $APP_ROLEASSIGMENT_ID -ResourceId $APP_SP_OID
+# Alternative PS Cmdlet 
+#New-AzureADServiceAppRoleAssignment -ObjectId $ADF_SP_OID -PrincipalId $ADF_SP_OID -Id $APP_ROLEASSIGMENT_ID -ResourceId $SP_OID
 
-# Set job variable from script, to be used by other scripts in the pipeline
+# Set job variable from script, to be used by other scripts in the pipeline if needed
 echo "##vso[task.setvariable variable=TENANT_ID]$TENANT_ID"
 echo "##vso[task.setvariable variable=SUBSCRIPTION_ID]$SUBSCRIPTION_ID"
 echo "##vso[task.setvariable variable=APP_SP_OID]$SP_OID"
