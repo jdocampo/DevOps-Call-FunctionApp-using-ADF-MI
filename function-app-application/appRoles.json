@@ -1,0 +1,9 @@
+[{
+    "allowedMemberTypes": [
+      "Application"
+    ],
+    "description": "Consumer apps have access to the Function App",
+    "displayName": "ConsumerApps",
+    "isEnabled": "true",
+    "value": "ConsumerApps"
+}]
