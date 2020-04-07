@@ -1,5 +1,7 @@
 # Tutorial: Authorize FunctionApp calls from Data Factory using Managed Identity
 
+**Disclaimer**: For this tutorial to work, you should be **Owner of the Subscription** and you must have **Global Admin Role on the Directory** of the subscription, in order to create the Service Connection and provide it with the permission to create and modify applications. (Point 1.1)
+
 The intent of this repository is to provide a how-to guide on the set-up of a DevOps Project that deploys and configures an Azure Solution, from which Azure Data Factory performs http calls to a function app using Managed Identity to authenticate and authorize those calls.
 
 # Walkthrough
@@ -14,11 +16,14 @@ Enter https://dev.azure.com in your browser and log in with your Azure AD creden
 Then Create a new Project.
 
 In order to connect our project with the Azure subscription, Navigate to Project settings > Service connections. 
-Create a new service connection of type Azure Resource Manager. Select your subscription and don't select any resource group. Name the connection ARMConnection and click Ok.
+Create a new service connection of type Azure Resource Manager (automatic). Select your subscription (you should its owner) and don't select any resource group. Name the connection ARMConnection and click Ok.
 ![NewServiceConnection](https://github.com/jdocampo/DevOps-Call-FunctionApp-using-ADF-MI/blob/master/images/NewServiceConnection.png)
 
 When the service connection is created, click on its name, and on the overview pane, click on *Manage Service Principal* 
 ![ManageServiceConnection](https://github.com/jdocampo/DevOps-Call-FunctionApp-using-ADF-MI/blob/master/images/ManageServiceConnection.png)
+
+### 1.1. Author the Service Connection Application
+You should be granted the role of **Global Administrator** in the Directory to be able to perform this step. This is a requirement of the Graph API in order to assign applications to other applications, which means, authorizing Data Factory MI to call the Function App.
 
 Go to the new App Registration if prompted on red, and from there, click on *API Permissions* on the left. Add *Application* type permissions of *Application.ReadWrite.All* for both Azure Active Directory Graph and Microsoft Graph, as we will need to create and configure the application that will provide the authentication and authorization for the function app.
 ![RequestAPIpermissionsAADG](https://github.com/jdocampo/DevOps-Call-FunctionApp-using-ADF-MI/blob/master/images/RequestAPIpermissionsAADG.png)
@@ -32,7 +37,7 @@ Return to the DevOps project.
 Click on Repositories > Import (Under Import a Repository). Introduce the URL https://github.com/jdocampo/DevOps-Call-FunctionApp-using-ADF-MI.git and click *Import*
 
 ## 3.Create and Execute the pipeline
-Go to Pipelines > Builds, click New Pipeline, select Azure Repos Git and select your repository. 
+Go to Pipelines > Pipelines, click New Pipeline, select Azure Repos Git and select your repository. 
 On the Configuration, click Existing Azure Pipelines YAML file, in the path select /azure-pipeline.yaml, and click continue.
 The build pipeline definition file from source control will open. 
 It contains a single script task that will perform the following:
@@ -59,3 +64,13 @@ After less than 5 minutes, everything should be deployed successfully.
 
 Go to the [Data Factory v2 portal](http://datafactoryv2.azure.com/), and select the Data Factory that was created, it should be named $(APP_NAME)-df.
 Select Author > Pipelines > ExecuteFunctionApp. Click on Debug and it will execute the pipeline. See how the one that is configured with MSI executes correctly, but the one that isn't raises the error *"You do not have permission to view this directory or page"*.
+
+### Note: Configuration of the Web Activity
+In order to call the Function App, we use a Web Activity, with the following configuration:
+
+* URL: url of the function App (you can get it from the Function App resource in Azure clicking the Get Function URL)
+* Method and Body: Depends on the function you just created. Here we just use a POST Method with the key "name". Choose any value you prefer.
+* Under *Advanced*: **MSI** as Authentication method, and under Resource, is the **Application ID URI** of the Application, which also matches the base url of the Function App. For example, if your function url is: https://<your-app-name>.azurewebsites.net/api/HttpTrigger the resource is  https://<your-app-name>.azurewebsites.net (beware of not ending the URL in slash (/), or the authentication will fail)
+
+
+Congratulations, you have successfully completed the tutorial!
